@@ -49,7 +49,7 @@ func (pool *Pool) getWalk() filepath.WalkFunc {
 
 	return func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
@@ -59,13 +59,13 @@ func (pool *Pool) getWalk() filepath.WalkFunc {
 
 		data, err = os.ReadFile(path)
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
 		err = json.Unmarshal(data, &token)
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
@@ -82,7 +82,7 @@ func (pool *Pool) getRefreshWalk() filepath.WalkFunc {
 
 	return func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
@@ -92,13 +92,13 @@ func (pool *Pool) getRefreshWalk() filepath.WalkFunc {
 
 		data, err = os.ReadFile(path)
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
 		err = json.Unmarshal(data, &token)
 		if err != nil {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 			return err
 		}
 
@@ -116,11 +116,11 @@ func (pool *Pool) runTask() {
 	go func(pool *Pool, t *time.Ticker) {
 		for {
 			<-t.C
-			sugarLogger.Info("here")
+			SugarLogger.Info("here")
 			pool.refreshPool()
 		}
 
-		sugarLogger.Info("error here")
+		SugarLogger.Info("error here")
 	}(pool, ticker)
 
 }
@@ -144,10 +144,10 @@ func New(path string) *Pool {
 
 func (pool *Pool) refreshPool() {
 
-	sugarLogger.Info("refresh here !")
+	SugarLogger.Info("refresh here !")
 	err := filepath.Walk(pool.path, pool.getRefreshWalk())
 	if err != nil {
-		sugarLogger.Error(err)
+		SugarLogger.Error(err)
 	}
 
 	key := fmt.Sprintf("%d-%d", time.Now().UnixMilli(), 0)
@@ -185,7 +185,7 @@ func (pool *Pool) Offer(token Token) {
 		if err == nil {
 			os.WriteFile(fileName, data, 0666)
 		} else {
-			sugarLogger.Error(err)
+			SugarLogger.Error(err)
 		}
 	} else {
 		keyTimestamp = token.ExpireTimestamp

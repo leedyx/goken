@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var sugarLogger *zap.SugaredLogger
+var SugarLogger *zap.SugaredLogger
 
 func init() {
 	encoderConfig := zap.NewProductionEncoderConfig()
@@ -20,5 +20,5 @@ func init() {
 
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
 	logger := zap.New(core, zap.AddCaller())
-	sugarLogger = logger.Sugar()
+	SugarLogger = logger.Sugar()
 }
