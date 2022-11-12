@@ -2,40 +2,53 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"goken/pool"
+	"io"
 	"net/http"
+	"strconv"
 )
 
 var sugarLogger = pool.SugarLogger
 var tokenPool = pool.New("./token")
 
-func SubmitHandler(w http.ResponseWriter, req *http.Request) {
-	data := make([]byte, 4096)
-
-	defer req.Body.Close()
-	res, err := req.Body.Read(data)
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Add("content-type", "application/json; charset=UTF-8")
-
-	var token pool.Token
-	err = json.Unmarshal(data[0:res], &token)
-	if err != nil {
-		sugarLogger.Error(err)
-		errRes, _ := json.Marshal(ERROR_RESPONSE)
-		w.Write(errRes)
-	}
-
-	tokenPool.Offer(token)
-	successRes, _ := json.Marshal(SUCCESS_RESPONSE)
-	w.Write(successRes)
-
-}
-
 func main() {
 
-	http.HandleFunc("/ali-token/submit", SubmitHandler)
+	router := gin.Default()
 
-	http.ListenAndServe("localhost:38080", nil)
+	router.POST("/ali-token/submit", func(context *gin.Context) {
+		data, err := io.ReadAll(context.Request.Body)
+		if err != nil {
+			context.JSON(http.StatusOK, gin.H{"code": "1", "message": "ERROR"})
+		}
+
+		var token pool.Token
+
+		err = json.Unmarshal(data, &token)
+		if err != nil {
+			context.JSON(http.StatusOK, gin.H{"code": "1", "message": "ERROR"})
+		}
+
+		tokenPool.Offer(token)
+		context.JSON(http.StatusOK, gin.H{"code": "0", "message": "SUCCESS"})
+	})
+
+	router.GET("/ali-token/take", func(ctx *gin.Context) {
+		t := ctx.DefaultQuery("t", "0")
+		timestamp, err := strconv.ParseInt(t, 10, 64)
+		if err != nil {
+			timestamp = 0
+		}
+
+		token := tokenPool.Get(timestamp)
+		if token != nil {
+			ctx.JSON(http.StatusOK, gin.H{"code": "0", "message": "SUCCESS", "result": *token})
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{"code": "1", "message": "NO ITEM"})
+		}
+
+	})
+
+	router.Run("localhost:38080")
 
 }

@@ -204,7 +204,8 @@ func (pool *Pool) Get(timestamp int64) *Token {
 	res, ok := pool.tokenTree.Ceiling(key)
 	if ok {
 		pool.tokenTree.Remove(res.Key)
-		return res.Value.(*Token)
+		token, _ := res.Value.(Token)
+		return &token
 	}
 
 	return nil
