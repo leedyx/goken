@@ -9,7 +9,6 @@ import (
 	"strconv"
 )
 
-var sugarLogger = pool.SugarLogger
 var tokenPool = pool.New("./token")
 
 func main() {

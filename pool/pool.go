@@ -49,7 +49,7 @@ func (pool *Pool) getWalk() filepath.WalkFunc {
 
 	return func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
@@ -59,13 +59,13 @@ func (pool *Pool) getWalk() filepath.WalkFunc {
 
 		data, err = os.ReadFile(path)
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
 		err = json.Unmarshal(data, &token)
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
@@ -82,7 +82,7 @@ func (pool *Pool) getRefreshWalk() filepath.WalkFunc {
 
 	return func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
@@ -92,13 +92,13 @@ func (pool *Pool) getRefreshWalk() filepath.WalkFunc {
 
 		data, err = os.ReadFile(path)
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
 		err = json.Unmarshal(data, &token)
 		if err != nil {
-			SugarLogger.Error(err)
+			logger.Error(err)
 			return err
 		}
 
@@ -116,11 +116,10 @@ func (pool *Pool) runTask() {
 	go func(pool *Pool, t *time.Ticker) {
 		for {
 			<-t.C
-			SugarLogger.Info("here")
 			pool.refreshPool()
 		}
 
-		SugarLogger.Info("error here")
+		logger.Info("error here")
 	}(pool, ticker)
 
 }
@@ -144,10 +143,9 @@ func New(path string) *Pool {
 
 func (pool *Pool) refreshPool() {
 
-	SugarLogger.Info("refresh here !")
 	err := filepath.Walk(pool.path, pool.getRefreshWalk())
 	if err != nil {
-		SugarLogger.Error(err)
+		logger.Error(err)
 	}
 
 	key := fmt.Sprintf("%d-%d", time.Now().UnixMilli(), 0)
@@ -159,6 +157,7 @@ func (pool *Pool) refreshPool() {
 			break
 		} else {
 			pool.tokenTree.Remove(token.Key)
+			logger.Info("**** token -- ****")
 		}
 	}
 
@@ -185,16 +184,17 @@ func (pool *Pool) Offer(token Token) {
 		if err == nil {
 			os.WriteFile(fileName, data, 0666)
 		} else {
-			SugarLogger.Error(err)
+			logger.Error(err)
 		}
 	} else {
 		keyTimestamp = token.ExpireTimestamp
 		current = token.Id
 	}
 
-	defer pool.lock.Unlock()
 	pool.lock.Lock()
 	pool.tokenTree.Put(fmt.Sprintf("%d-%d", keyTimestamp, current), token)
+	pool.lock.Unlock()
+	logger.Infof("**** token ++ **** %d", pool.tokenTree.Size())
 }
 
 func (pool *Pool) Get(timestamp int64) *Token {
