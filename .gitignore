@@ -1,3 +1,5 @@
 .idea
 token
 token.log
+*.log
+*.exe

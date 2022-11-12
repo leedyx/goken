@@ -6,12 +6,20 @@ import (
 	"goken/pool"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 )
 
 var tokenPool = pool.New("./token")
 
 func main() {
+
+	gin.DisableConsoleColor()
+	gin.SetMode(gin.ReleaseMode)
+
+	// Logging to a file.
+	f, _ := os.OpenFile("./gin.log", os.O_CREATE|os.O_APPEND, 0666)
+	gin.DefaultWriter = io.MultiWriter(f)
 
 	router := gin.Default()
 
