@@ -193,8 +193,9 @@ func (pool *Pool) Offer(token Token) {
 
 	pool.lock.Lock()
 	pool.tokenTree.Put(fmt.Sprintf("%d-%d", keyTimestamp, current), token)
+	size := pool.tokenTree.Size()
 	pool.lock.Unlock()
-	logger.Infof("**** token ++ **** %d", pool.tokenTree.Size())
+	logger.Infof("**** token ++ **** %d", size)
 }
 
 func (pool *Pool) Get(timestamp int64) *Token {
