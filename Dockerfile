@@ -16,6 +16,7 @@ FROM alpine  as final
 # 时区设置成当前时区
 #RUN apk add --no-cache tzdata
 ENV TZ="Asia/Shanghai"
+RUN apk -U upgrade && apk add tzdata && cp /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 # 移动到用于存放生成的二进制文件的 /opt/app 目录
 WORKDIR /opt/app
 # 将二进制文件从 /opt/gat1400-Go/api-server 目录复制到这里
