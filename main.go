@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"goken/pool"
 	"io"
@@ -14,11 +15,16 @@ var tokenPool = pool.New("./token")
 
 func main() {
 
-	gin.DisableConsoleColor()
-	gin.SetMode(gin.ReleaseMode)
-
 	// Logging to a file.
-	f, _ := os.OpenFile("./gin.log", os.O_CREATE|os.O_APPEND, 0666)
+	pwd, _ := os.Getwd()
+
+	logName := fmt.Sprintf("%s/%s", pwd, "log/gin.log")
+	f, err := os.OpenFile(logName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+
+	if err != nil {
+		fmt.Errorf("error ! %v", err)
+	}
+
 	gin.DefaultWriter = io.MultiWriter(f)
 
 	router := gin.Default()
@@ -56,6 +62,6 @@ func main() {
 
 	})
 
-	router.Run("localhost:38080")
+	router.Run(":38080")
 
 }

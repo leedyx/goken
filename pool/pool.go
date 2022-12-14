@@ -179,7 +179,7 @@ func (pool *Pool) Offer(token Token) {
 		token.ExpireTimestamp = keyTimestamp
 		token.Id = current
 
-		fileName := fmt.Sprintf("%s\\%s-%d", pool.path, now.Format("15_04_05"), current)
+		fileName := fmt.Sprintf("%s/%s-%d", pool.path, now.Format("15_04_05"), current)
 		data, err := token.toJson()
 		if err == nil {
 			os.WriteFile(fileName, data, 0666)

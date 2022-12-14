@@ -35,8 +35,15 @@ func init() {
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+	pwd, _ := os.Getwd()
 
-	file, _ := os.OpenFile("./token.log", os.O_CREATE|os.O_APPEND, 0666)
+	tokenLog := fmt.Sprintf("%s/%s", pwd, "log/token.log")
+
+	file, err := os.OpenFile(tokenLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+
+	if err != nil {
+		fmt.Errorf("error ! %v", err)
+	}
 	writeSyncer := zapcore.AddSync(file)
 
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
